@@ -169,6 +169,12 @@
 			scope = "config",
 		},
 
+		disablewarnings =
+		{
+			kind = "list",
+			scope = "config",
+		},
+
 		flags =
 		{
 			kind  = "list",
