@@ -387,6 +387,13 @@
 		end
 	end
 
+	local function warnings(cfg)
+		if cfg.disablewarnings then
+			local d = table.concat(cfg.disablewarnings, ';')
+			_p(3, '<DisableSpecificWarnings>' .. d .. '</DisableSpecificWarnings>')
+		end
+	end
+
 	local function floating_point(cfg)
 		if cfg.platform == "Orbis" then
 			if cfg.flags.FloatFast then
@@ -605,6 +612,7 @@
 		sse(cfg)
 		floating_point(cfg)
 		debug_info(cfg)
+		warnings(cfg)
 
 		if cfg.flags.Symbols then
 			-- The compiler pdb should be different than the linker pdb, and
