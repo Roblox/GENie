@@ -113,7 +113,11 @@
 		_p(2, '<ConfigurationType>%s</ConfigurationType>',vc2010.config_type(cfg))
 		_p(2, '<UseDebugLibraries>%s</UseDebugLibraries>', iif(optimisation(cfg) == "Disabled","true","false"))
 
-		_p(2, '<PlatformToolset>%s</PlatformToolset>', premake.vstudio.toolset)
+		local toolset = premake.vstudio.toolset
+		if cfg.platformtoolset then
+			toolset = cfg.platformtoolset
+		end
+		_p(2, '<PlatformToolset>%s</PlatformToolset>', toolset)
 
 		if os.is64bit() then
 			_p(2, '<PreferredToolArchitecture>x64</PreferredToolArchitecture>')

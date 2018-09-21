@@ -175,6 +175,12 @@
 			scope = "config",
 		},
 
+		platformtoolset =
+		{
+			kind = "string",
+			scope = "config",
+		},
+
 		flags =
 		{
 			kind  = "list",
