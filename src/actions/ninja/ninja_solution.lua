@@ -111,7 +111,7 @@ end
 		for _,plat in ipairs(platforms) do
 			for _,name in ipairs(sln.configurations) do
 				p.generate(sln, ninja.get_solution_name(sln, name, plat), function(sln)
-					generate(getconfigs(sln, name, plat))
+					generate(getconfigs(sln, name, plat), plat)
 				end)
 			end
 		end
@@ -121,7 +121,7 @@ end
 		return path.join(sln.getlocation(cfg, plat), "build.ninja")
 	end
 
-	function generate(prjcfgs)
+	function generate(prjcfgs, plat)
 		local cfgs          = {}
 		local cfg_first     = nil
 		local cfg_first_lib = nil
@@ -150,7 +150,7 @@ end
 			end
 
 			-- include other ninja file
-			_p("subninja " .. cfg:getprojectfilename())
+			_p("subninja " .. path.getrelative(cfg.solution.getlocation(cfg.name, plat), cfg:getprojectfilename(cfg.project.basedir)))
 		end
 
 		_p("")

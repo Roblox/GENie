@@ -187,11 +187,11 @@ local p     = premake
 
 		for cmd_index, cmdsets in ipairs(command_files) do
 			for _, cmdset in ipairs(cmdsets) do
-				local file_in = path.getrelative(cfg.location, cmdset[1])
-				local file_out = path.getrelative(cfg.location, cmdset[2])
+				local file_in = path.getrelative(cfg.solution.basedir, cmdset[1])
+				local file_out = path.getrelative(cfg.solution.basedir, cmdset[2])
 				local deps = ''
 				for i, dep in ipairs(cmdset[3]) do
-					deps = deps .. path.getrelative(cfg.location, dep) .. ' '
+					deps = deps .. path.getrelative(cfg.solution.basedir, dep) .. ' '
 				end
 				_p("build " .. file_out .. ': ' .. cmdset[4] .. ' ' .. file_in .. ' | ' .. deps .. prebuildsuffix)
 				_p("")
@@ -263,8 +263,22 @@ local p     = premake
 		return path.join(cfg.objectsdir, path.trimdots(file))
 	end
 
-	function cpp.file_rules(prj,cfg, flags)
+	function rebase_path(cfg, file)
+		return path.rebase(file, cfg.location, cfg.solution.getlocation(cfg.name, cfg.platform))
+	end
+
+	function rebase_paths(cfg, files)
+		local res = {}
+		for _, file in ipairs(files) do
+			table.insert(res, rebase_path(cfg, file))
+		end
+		return res
+	end
+
+	function cpp.file_rules(prj, cfg, flags)
 		_p("# build files")
+
+		local solution_path = cfg.solution.getlocation(cfg.name, cfg.platform)
 
 		for _, file in ipairs(cfg.files) do
 			_p("# FILE: " .. file)
@@ -287,23 +301,37 @@ local p     = premake
 				local extra_deps = #cfg.extra_deps and '| ' .. table.concat(cfg.extra_deps[objfilename] or {}, ' ') or ''
 				local order_deps = #cfg.order_deps and '|| ' .. table.concat(cfg.order_deps[objfilename] or {}, ' ') or ''
 				local extra_flags = #cfg.extra_flags and ' ' .. table.concat(cfg.extra_flags[objfilename] or {}, ' ') or ''
-		
+
+				local fixed_file = rebase_path(cfg, file)
+
 				local cflags = "cflags"
 				if path.isobjcfile(file) then
-					_p("build " .. objfilename .. ": cxx " .. file .. extra_deps .. order_deps)
+					_p("build " .. objfilename .. ": cxx " .. fixed_file .. extra_deps .. order_deps)
 					cflags = "objcflags"
 				elseif path.isasmfile(file) then
-					_p("build " .. objfilename .. ": cc " .. file .. extra_deps .. order_deps)
+					_p("build " .. objfilename .. ": cc " .. fixed_file .. extra_deps .. order_deps)
 					cflags = "asmflags"
 				elseif path.iscfile(file) and not cfg.options.ForceCPP then
-					_p("build " .. objfilename .. ": cc " .. file .. extra_deps .. order_deps)
+					_p("build " .. objfilename .. ": cc " .. fixed_file .. extra_deps .. order_deps)
 				else
-					_p("build " .. objfilename .. ": cxx " .. file .. extra_deps .. order_deps)
+					_p("build " .. objfilename .. ": cxx " .. fixed_file .. extra_deps .. order_deps)
 					cflags = "cxxflags"
 				end
-	
+
+				local includes = ''
+
+				if cfg.includedirs ~= nil then
+					includes = includes ..
+						table.implode(premake.gcc.getincludedirs(rebase_paths(cfg, cfg.includedirs)), '', '', ' ')
+				end
+
+				if cfg.systemincludedirs ~= nil then
+					includes = includes .. ' ' ..
+						table.implode(premake.gcc.getsystemincludedirs(rebase_paths(cfg, cfg.systemincludedirs)), '', '', ' ')
+				end
+
 				_p(1, "flags    = " .. flags[cflags] .. extra_flags)
-				_p(1, "includes = " .. flags.includes)
+				_p(1, "includes = " .. includes)
 				_p(1, "defines  = " .. flags.defines)
 			elseif path.isresourcefile(file) then
 				-- TODO
