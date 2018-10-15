@@ -115,7 +115,7 @@ function new_cfg_proxy(cfg)
 		buildtarget = rebasekeys(table.deepcopy(cfg.buildtarget), keys, old, new),
 		linktarget  = rebasekeys(table.deepcopy(cfg.linktarget), keys, old, new),
 	}
-	
+
 	v.files             = rebasearray(cfg.files, old, new)
 	v.includedirs       = rebasearray(cfg.includedirs, old, new)
 	v.libdirs       	= rebasearray(cfg.libdirs, old, new)
@@ -136,8 +136,10 @@ function cfg_proxy:getprojectfilename(fullpath)
 	return name
 end
 
+-- GENie assumes that the cwd is changed for each project, but ninja never changes the cwd.
 function cfg_proxy:getoutputfilename()
-	return path.join(self.buildtarget.directory, self.buildtarget.name)
+	local localpath = path.join(self.buildtarget.directory, self.buildtarget.name)
+	return path.rebase(localpath, self.location, self.solution.getlocation(self.name, 'Native'))
 end
 
 local proxy_cache = { 
