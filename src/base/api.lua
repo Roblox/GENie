@@ -243,6 +243,7 @@
 					StaticATL = 1,
 					StaticRuntime = 1,
 					Symbols = 1,
+					DwarfOnlySymbols = 1,
 					Unicode = 1,
 					Unsafe = 1,
 					UnsignedChar = 1,
