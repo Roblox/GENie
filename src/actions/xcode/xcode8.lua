@@ -28,7 +28,9 @@
 			PRODUCT_NAME = cfg.buildtarget.basename,
 		}
 
-		if not cfg.flags.Symbols then
+		if cfg.flags.DwarfOnlySymbols then
+			options.DEBUG_INFORMATION_FORMAT = "dwarf"
+		elseif not cfg.flags.Symbols then
 			options.DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"
 		end
 
